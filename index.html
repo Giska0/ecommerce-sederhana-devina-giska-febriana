@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gys Lumière</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header>
+    <h1>Gys Lumière</h1>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#shop">Products</a>
+        <a href="#category">Category</a>
+        <a href="#" onclick="toggleCart()">Cart</a>
+        <a href="#about">About</a>
+    </nav>
+</header>
+
+<main>
+
+<!-- HERO -->
+<section id="home" class="hero">
+    <h2>Lightly worn, deeply felt ✧</h2>
+    <p class="welcome-text">
+        Welcome to a softer kind of style<br>
+        <span>Your online store for timeless pieces</span>
+    </p>
+    <button onclick="location.href='#shop'">Shop Collection</button>
+</section>
+
+<!-- CATEGORY -->
+<section id="category" class="category">
+    <h2>Category</h2>
+    <div class="category-box">
+        <div onclick="filterProduct('all')">All</div>
+        <div onclick="filterProduct('dress')">Dresses</div>
+        <div onclick="filterProduct('blouse')">Blouses</div>
+        <div onclick="filterProduct('set')">Set Outfit</div>
+        <div onclick="filterProduct('vintage')">Vintage</div>
+    </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="shop" class="products">
+    <h2>Our Collection</h2>
+
+    <div class="product-container">
+
+        <div class="card" data-category="set">
+            <img src="images/Produk1.jpeg" alt="Ivory Lace Top & Midnight Skirt">
+            <h3>Ivory Lace Top & Midnight Skirt</h3>
+            <p class="price">Rp 135.000</p>
+            <p>Soft lace top with a flowy black skirt for a timeless look</p>
+
+            <div class="qty-control">
+                <button onclick="changeQtyCard(this, -1)">-</button>
+                <span class="qty">0</span>
+                <button onclick="changeQtyCard(this, 1)">+</button>
+            </div>
+
+            <button onclick="addToCartWithQty(this, 'Ivory Lace Top', 135000)">Add to Cart</button>
+        </div>
+
+        <div class="card" data-category="dress">
+            <img src="images/Produk2.jpeg" alt="Autumn Check Mini Dress">
+            <h3>Autumn Check Mini Dress</h3>
+            <p class="price">Rp 150.000</p>
+            <p>Warm-toned check dress with a vintage silhouette.</p>
+
+            <div class="qty-control">
+                <button onclick="changeQtyCard(this, -1)">-</button>
+                <span class="qty">0</span>
+                <button onclick="changeQtyCard(this, 1)">+</button>
+            </div>
+
+            <button onclick="addToCartWithQty(this, 'Autumn Check Mini Dress', 150000)">Add to Cart</button>
+        </div>
+
+        <div class="card" data-category="blouse">
+            <img src="images/Produk3.jpeg" alt="Soft Ribbon Blouse Set">
+            <h3>Soft Ribbon Blouse Set</h3>
+            <p class="price">Rp 145.000</p>
+            <p>Light blouse with ribbon detail, soft and feminine.</p>
+
+            <div class="qty-control">
+                <button onclick="changeQtyCard(this, -1)">-</button>
+                <span class="qty">0</span>
+                <button onclick="changeQtyCard(this, 1)">+</button>
+            </div>
+
+            <button onclick="addToCartWithQty(this, 'Ribbon Blouse Set', 145000)">Add to Cart</button>
+        </div>
+
+        <div class="card" data-category="vintage">
+            <img src="images/Produk4.jpeg" alt="Classic Layered Dress">
+            <h3>Classic Layered Dress</h3>
+            <p class="price">Rp 155.000</p>
+            <p>Layered dress with a refined vintage touch.</p>
+
+            <div class="qty-control">
+                <button onclick="changeQtyCard(this, -1)">-</button>
+                <span class="qty">0</span>
+                <button onclick="changeQtyCard(this, 1)">+</button>
+            </div>
+
+            <button onclick="addToCartWithQty(this, 'Layered Dress', 155000)">Add to Cart</button>
+        </div>
+
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="about">
+    <h2>About Gys Lumière</h2>
+    <p>
+    Gys Lumière is a clothing space inspired by soft light, vintage elegance, 
+    and quiet femininity. Each piece is thoughtfully selected to reflect a 
+    timeless mood — gentle, refined, and effortlessly worn.
+    </p>
+
+    <p>
+    Blending classic silhouettes with a modern touch, Gys Lumière invites you 
+    to embrace a style that feels personal, subtle, and enduring.
+    </p>
+</section>
+
+</main>
+
+<!-- CART -->
+<div id="cart-popup" class="cart-popup">
+    <div class="cart-content">
+        <span class="close-btn" onclick="toggleCart()">×</span>
+        <h2>Your Cart</h2>
+        <ul id="cart-items"></ul>
+        <h3 id="total">Total: Rp 0</h3>
+        <button onclick="checkout()">Checkout</button>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <p>Contact: hello@gyslumiere.com</p>
+    <p>© 2026 Gys Lumière</p>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<div id="categoryModal" class="category-modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title">Category</h2>
+        <div class="modal-products" id="modal-products"></div>
+    </div>
+</div>
+
+<script>
+let cart = [];
+
+function updateCart() {
+    let cartItems = document.getElementById("cart-items");
+    let total = 0;
+    cartItems.innerHTML = "";
+
+    cart.forEach((item, index) => {
+        total += item.price * item.qty;
+
+        let li = document.createElement("li");
+
+        li.innerHTML = `
+            <span>${item.name} (Rp ${item.price})</span>
+            <div>
+                <button onclick="changeQty(${index}, -1)">-</button>
+                <span>${item.qty}</span>
+                <button onclick="changeQty(${index}, 1)">+</button>
+            </div>
+        `;
+
+        cartItems.appendChild(li);
+    });
+
+    document.getElementById("total").textContent = "Total: Rp " + total;
+}
+
+function changeQty(index, change) {
+    cart[index].qty += change;
+
+    if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+    }
+
+    updateCart();
+}
+
+function toggleCart(forceOpen = false) {
+    let popup = document.getElementById("cart-popup");
+
+    if (forceOpen) {
+        popup.style.display = "flex";
+    } else {
+        popup.style.display = (popup.style.display === "flex") ? "none" : "flex";
+    }
+}
+
+function checkout() {
+    if (cart.length === 0) {
+        showToast("Your cart is empty,", "Please add something first");
+    } else {
+        showToast(
+            "A quiet piece, now belongs to you.",
+            "Thank you for choosing us ♡"
+        );
+
+        cart = [];
+        updateCart();
+
+        setTimeout(() => {
+            toggleCart();
+        }, 3500);
+    }
+}
+
+function changeQtyCard(el, change) {
+    let qtySpan = el.parentElement.querySelector(".qty");
+    let current = parseInt(qtySpan.textContent);
+
+    current += change;
+    if (current < 0) current = 0;
+
+    qtySpan.textContent = current;
+}
+
+function addToCartWithQty(btn, name, price) {
+    let qty = parseInt(btn.parentElement.querySelector(".qty").textContent);
+
+    if (qty === 0) {
+        showToast("Please select quantity", "before adding to cart");
+        return;
+    }
+
+    let existing = cart.find(item => item.name === name);
+
+    if (existing) {
+        existing.qty += qty;
+    } else {
+        cart.push({ name, price, qty });
+    }
+
+    updateCart();
+    toggleCart(true);
+
+    showToast(name + " added to cart", "Ready in your bag ♡");
+
+    btn.parentElement.querySelector(".qty").textContent = 0;
+}
+
+function showToast(message1, message2) {
+    const toast = document.getElementById("toast");
+
+    toast.innerHTML = message1 + "<br>" + message2;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 4000);
+}
+
+function filterProduct(category) {
+    const modal = document.getElementById("categoryModal");
+    const container = document.getElementById("modal-products");
+    const title = document.getElementById("modal-title");
+
+    const allCards = document.querySelectorAll("#shop .card");
+
+    container.innerHTML = "";
+
+    allCards.forEach(card => {
+        if (category === "all" || card.dataset.category === category) {
+            const clone = card.cloneNode(true);
+            container.appendChild(clone);
+        }
+    });
+
+    title.innerText = category.toUpperCase();
+    modal.style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("categoryModal").style.display = "none";
+}
+</script>
+
+</body>
+</html>
